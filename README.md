@@ -32,12 +32,18 @@ pip install playwright pandas
 playwright install chromium
 ```
 
-2. Run:
+2. Edit `main.py` and set the URLs and number of pages you want to scrape:
+```python
+data_kabum = scrape_kabum("https://www.kabum.com.br/hardware/memoria-ram", pages=3)
+data_ml = scrape_mercado_livre("https://lista.mercadolivre.com.br/mouse-gamer", pages=2)
+```
+
+3. Run:
 ```bash
 python main.py
 ```
 
-A `produtos.csv` file will be generated with all collected data.
+A `products.csv` file will be generated with all collected data.
 
 ## Notes
 

@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 
-def scrape_kabum():
+
+def scrape_kabum(url,pages=1):
     dados = []
     with sync_playwright() as p:
 
@@ -8,22 +9,25 @@ def scrape_kabum():
 
         page = browser.new_page()
 
-        url = f"https://www.kabum.com.br/hardware/memoria-ram"
         page.goto(url)
-        page.wait_for_selector(".productCard")
 
-        produtos = page.locator(".productCard")
+        for _ in range(pages):
+            page.wait_for_selector(".productCard")
 
-        for i in range(produtos.count()):
-            produto = produtos.nth(i)
-            nome = produto.locator(".nameCard").inner_text()
-            preco = produto.locator(".priceCard").inner_text()
+            produtos = page.locator(".productCard")
 
-            dados.append({
-                "site": "kabum",
-                "name": nome,
-                "price": preco
-            })
+            for i in range(produtos.count()):
+                produto = produtos.nth(i)
+                nome = produto.locator(".nameCard").inner_text()
+                preco = produto.locator(".priceCard").inner_text()
+
+                dados.append({
+                    "site": "kabum",
+                    "name": nome,
+                    "price": preco
+                })
+            if _ < pages - 1:
+                page.get_by_role("button", name="Next page").click()
+
         browser.close()
     return dados
-

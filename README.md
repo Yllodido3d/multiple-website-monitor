@@ -1,6 +1,6 @@
-# Multi-Site Price Scraper
+# Multi-Site Price Monitor
 
-This project was built based on a fictional client request: extract product names and prices from multiple e-commerce websites and consolidate everything into a single CSV file.
+This project was built based on a fictional client request: monitor product prices across multiple e-commerce websites and send an email alert when a price drop is detected.
 
 ## Structure
 
@@ -8,21 +8,22 @@ This project was built based on a fictional client request: extract product name
 project/
 │
 ├── scrapers/
-│   ├── kabum.py          # Scraper for KaBuM (hardware category)
-│   └── mercado_livre.py  # Scraper for Mercado Livre (mouse gamer category)
+│   ├── kabum.py           # Scraper for KaBuM
+│   └── mercado_livre.py   # Scraper for Mercado Livre
 │
-├── main.py               # Runs all scrapers and exports to CSV
-└── produtos.csv          # Output file
+├── main.py                # Runs all scrapers and exports raw data to CSV
+├── monitor.py             # Runs scrapers, compares prices and sends email alert
+├── precos.json            # Auto-generated — stores the last recorded prices
+└── config.py              # Email credentials (not included in repo)
 ```
 
 - Each scraper is an independent module that returns a list of dicts with the extracted data.
-- `main.py` imports all modules, merges the results, and saves them to a CSV file.
+- `main.py` exports all scraped data to a CSV file.
+- `monitor.py` compares current prices against the last recorded ones and sends an email if any price has dropped.
 
 ## Example Output
 
 ![image](image.png)
-
-CSV spreadsheet displaying scraped product data from KaBuM and Mercado Livre websites, with three columns showing retailer names, product descriptions for computer hardware and gaming peripherals, and prices in Brazilian Real currency.
 
 ## How to run
 
@@ -32,25 +33,39 @@ pip install playwright pandas
 playwright install chromium
 ```
 
-2. Edit `main.py` and set the URLs and number of pages you want to scrape:
+2. Create a `config.py` file with your email credentials:
 ```python
-data_kabum = scrape_kabum("https://www.kabum.com.br/hardware/memoria-ram", pages=3)
-data_ml = scrape_mercado_livre("https://lista.mercadolivre.com.br/mouse-gamer", pages=2)
+EMAIL = "your@gmail.com"
+SENHA = "your app password"
+```
+> To generate a Gmail app password: Google Account → Security → 2-Step Verification → App Passwords.
+
+3. Edit the URLs and number of pages in `monitor.py` or `main.py`:
+```python
+scrape_kabum("https://www.kabum.com.br/hardware/memoria-ram", paginas=3)
+scrape_mercado_livre("https://lista.mercadolivre.com.br/mouse-gamer", paginas=2)
 ```
 
-3. Run:
+4. Run the monitor:
+```bash
+python monitor.py
+```
+
+On the first run, `precos.json` is created with the current prices. On subsequent runs, prices are compared and an email is sent if any drop is detected.
+
+To export raw data to CSV instead:
 ```bash
 python main.py
 ```
 
-A `products.csv` file will be generated with all collected data.
+## Known Limitations
 
-## Notes
-
-This project has no interface, since the original request was simple — run manually and return raw data in a CSV. In a production scenario, the ideal would be to add at minimum a way to pass custom category URLs as input, so the client can monitor any product page without touching the code.
+- Mercado Livre changes the order of results between runs, which can cause false comparisons. Using product URLs as keys instead of names would make matching more reliable — planned as a future improvement.
+- Mercado Livre does not work in headless mode and requires a visible browser window.
 
 ## Built with
 
 - Python
 - Playwright
+- smtplib
 - csv

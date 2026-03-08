@@ -2,16 +2,16 @@ from playwright.sync_api import sync_playwright
 import re
 
 
-def scrape_mercado_livre(url,pages=1):
+def scrape_mercado_livre(url, pages=1):
     dados = []
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
         page = browser.new_page()
 
         page.goto(url)
 
         for _ in range(pages):
-            page.wait_for_selector(".ui-search-layout__item")
+            page.wait_for_selector("li.ui-search-layout__item")
 
             try:
                 # tirar o popup, se tiver
@@ -41,16 +41,17 @@ def scrape_mercado_livre(url,pages=1):
                 else:
                     preco = f"R${fracao},00"
 
+                preco = preco.replace("\xa0", "").strip()
+
                 dados.append({
                     "site": "Mercado Livre",
                     "name": nome,
                     "price": preco
                 })
-            
-            #clica em proxmi depois de raspar
+
+            # clica em proxmi depois de raspar
             if _ < pages - 1:
                 page.get_by_role("link", name="Seguinte").click()
 
         browser.close()
         return dados
-

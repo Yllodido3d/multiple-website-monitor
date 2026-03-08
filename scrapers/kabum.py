@@ -1,11 +1,11 @@
 from playwright.sync_api import sync_playwright
 
 
-def scrape_kabum(url,pages=1):
+def scrape_kabum(url, pages=1):
     dados = []
     with sync_playwright() as p:
 
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
 
         page = browser.new_page()
 

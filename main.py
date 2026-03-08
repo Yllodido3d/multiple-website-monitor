@@ -1,6 +1,4 @@
 import csv
-
-from sqlalchemy import all_
 from scrapers.kabum import scrape_kabum
 from scrapers.mercado_livre import scrape_mercado_livre
 
